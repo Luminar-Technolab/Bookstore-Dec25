@@ -1,9 +1,42 @@
 import React, { useState } from 'react'
 import { FaEye, FaEyeSlash, FaUser } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
+import { useFormik } from "formik";
+import * as Yup from 'yup';
+import { registerAPI } from "../services/allAPI";
 
 function Auth({insideRegister}) {
   const [togglePasswordType,setTogglePasswordType] = useState(false)
+
+  const formik = useFormik({
+    initialValues:{
+      username:"",
+      email:"",
+      password:""
+    },
+    validationSchema: Yup.object({
+      username:Yup.string().min(3,"Must be atleast 3 characters").required("Required"),
+      email:Yup.string().email("Invalid email").required("Required"),
+      password:Yup.string().required("Required")
+    }),
+    onSubmit:(values,{resetForm})=>{
+      console.log(values);
+      if(insideRegister){
+        console.log("Register api call");
+        handleRegister(values)
+      }else{
+        console.log("Login api call");        
+      }
+      resetForm()
+    }
+  })
+  // console.log(formik.errors.username);
+
+  const handleRegister = async (userData)=>{
+    const result = await registerAPI(userData)
+    console.log(result);
+  }
+  
   return (
     <div className='w-full min-h-screen flex justify-center items-center bg-[url(/landing.jpg)] bg-cover bg-center text-white'>
       <div className="p-10">
@@ -13,23 +46,29 @@ function Auth({insideRegister}) {
             <FaUser className='text-3xl'/>
           </div>
           <h1 className="text-2xl"> {insideRegister ? "Register": "Login"} </h1>
-          <form  className="my-5 w-full">
+          <form  onSubmit={formik.handleSubmit} className="my-5 w-full">
             {/* username */}
             {
               insideRegister &&
-              <input className='bg-white p-2 w-full rounded my-5 text-black' type="text" placeholder='Username' />
+              <>
+              <input name='username' value={formik.values.username} onChange={formik.handleChange} className='bg-white p-2 w-full rounded mt-5 mb-3 text-black' type="text" placeholder='Username' />
+              <div className="mb-3 text-xs text-yellow-400">{formik.errors.username}</div>
+              </>
             }
+
             {/* email */}
-            <input className='bg-white p-2 w-full rounded mb-5 text-black' type="text" placeholder='E Mail' />
+            <input name='email' value={formik.values.email} onChange={formik.handleChange}  className='bg-white p-2 w-full rounded mb-3 text-black' type="text" placeholder='E Mail' />
+            <div className="mb-3 text-xs text-yellow-400">{formik.errors.email}</div>
             {/* password */}
             <div className='flex items-center'>
-              <input className='bg-white p-2 w-full rounded mb-5 text-black' type={togglePasswordType?"text":"password"} placeholder='Password' />
+              <input name='password' value={formik.values.password} onChange={formik.handleChange} className='bg-white p-2 w-full rounded mb-3 text-black' type={togglePasswordType?"text":"password"} placeholder='Password' />
               { togglePasswordType ?
                 <FaEyeSlash onClick={()=>setTogglePasswordType(!togglePasswordType)} className='text-gray-500 cursor-pointer' style={{marginTop:'-20px',marginLeft:'-30px'}}/>
               :
                 <FaEye onClick={()=>setTogglePasswordType(!togglePasswordType)} className='text-gray-500 cursor-pointer' style={{marginTop:'-20px',marginLeft:'-30px'}}/>
                 }
             </div>
+            <div className="mb-3 text-xs text-yellow-400">{formik.errors.password}</div>
             {/* forgot password */}
             <div className="flex justify-between mb-5">
                   <p className="text-xs text-orange-300">*Never Share your password with others.</p>
@@ -41,7 +80,7 @@ function Auth({insideRegister}) {
             <div className="text-center">
               {
                 insideRegister ?
-                <button className="bg-green-700 p-2 w-full rounded">Register</button>
+                <button type='submit' className="bg-green-700 p-2 w-full rounded">Register</button>
                 :
                 <button className="bg-green-700 p-2 w-full rounded">Login</button>
               }

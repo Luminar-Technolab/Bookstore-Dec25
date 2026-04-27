@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from 'react'
-import { FaBars, FaFacebookSquare, FaInstagram, FaUser } from 'react-icons/fa'
-import { FaXTwitter } from 'react-icons/fa6'
+import { FaBars, FaFacebookSquare, FaInstagram, FaPowerOff, FaUser } from 'react-icons/fa'
+import { FaGear, FaXTwitter } from 'react-icons/fa6'
 import { Link } from 'react-router-dom'
 
 function Header() {
   const [toggle,setToggle] = useState(false)
   const [token,setToken] = useState("")
   const [dp,setDp] = useState("")
+  const [userId,setUserId] = useState("")
+  const [dropDown,setDropDown] = useState(false)
 
   useEffect(()=>{
     if(sessionStorage.getItem("token") && sessionStorage.getItem("user")){
       const userToken = sessionStorage.getItem("token")
       const user = JSON.parse(sessionStorage.getItem("user"))
       setToken(userToken)
-      setDp(user.picture)
+      setDp(user?.picture)
+      setUserId(user?._id)
     }
   },[token])
 
@@ -42,10 +45,19 @@ function Header() {
          :
          <div>
             {/* profile icon */}
-            <button className='shadow-sm rounded ms-5 p-1 hover:bg-gray-100'>
-              <img width={'40px'} height={'40px'} style={{borderRadius:'50%'}} src={dp==""?"https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_1280.png":dp} alt="profile icon" />
+            <button onClick={()=>setDropDown(!dropDown)} className='shadow-sm rounded ms-5 p-1 hover:bg-gray-100'>
+              <img width={'40px'} height={'40px'} style={{borderRadius:'50%'}} src={dp==""?"https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_1280.png":dp} alt="profile" />
             </button>
             {/* dropdown menu */}
+            {
+              dropDown &&
+              <div className='absolute right-0 z-10 mt-2 w-40 bg-white shadow rounded ring-1 ring-black/5 p-2 focus:outline-hidden'>
+              {/* profile link */}
+              <Link to={`/profile/${userId}`} className='flex items-center text-gray-600 text-sm px-3 py-2'> <FaGear className='me-1'/> Profile</Link>
+              {/* logout btn */}
+              <button className='flex items-center text-gray-600 text-sm px-3 py-2'> <FaPowerOff className='me-1'/> Logout</button>
+            </div>
+            }
          </div>
        }
       </div>
@@ -55,7 +67,28 @@ function Header() {
       {/* menu & login @ small screen */}
       <div className="flex justify-between items-center text-2xl pb-2 md:pb-0 md:hidden">
         <button onClick={()=>setToggle(!toggle)}> <FaBars/> </button>
-        <Link to={'/login'} className='border border-black rounded px-3  flex items-center hover:bg-black hover:text-white'> <FaUser className='me-1'/> Login </Link>
+         {/* login link / profile icon block */}
+       {
+        !token ?
+         <Link to={'/login'} className='border border-black rounded px-3 py-2 ms-3 flex items-center hover:bg-black hover:text-white'> <FaUser className='me-1'/> Login </Link>
+         :
+         <div>
+            {/* profile icon */}
+            <button onClick={()=>setDropDown(!dropDown)} className='shadow-sm rounded ms-5 p-1 hover:bg-gray-100'>
+              <img width={'40px'} height={'40px'} style={{borderRadius:'50%'}} src={dp==""?"https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_1280.png":dp} alt="profile icon" />
+            </button>
+            {/* dropdown menu */}
+            {
+              dropDown &&
+              <div className='absolute right-0 z-10 mt-2 w-40 bg-white shadow rounded ring-1 ring-black/5 p-2 focus:outline-hidden'>
+              {/* profile link */}
+              <Link to={`/profile/${userId}`} className='flex items-center text-gray-600 text-sm px-3 py-2'> <FaGear className='me-1'/> Profile</Link>
+              {/* logout btn */}
+              <button className='flex items-center text-gray-600 text-sm px-3 py-2'> <FaPowerOff className='me-1'/> Logout</button>
+            </div>
+            }
+         </div>
+       }
       </div>
       <ul className={toggle?'flex flex-col':'md:flex hidden'}>
         <li><Link to={'/'} className='md:mx-4 mt-2 md:mt-0'>HOME</Link></li>

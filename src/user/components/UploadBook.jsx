@@ -1,13 +1,16 @@
 import React, { useState } from 'react'
 import { FaPlus } from 'react-icons/fa'
+import { ToastContainer, toast } from 'react-toastify';
+import { addBookAPI } from '../../services/allAPI';
 
 function UploadBook() {
     const [bookDetails,setBookDetails] = useState({
         title:"",author:"",pages:"",imageURL:"",price:"",discountPrice:"",abstract:"",publisher:"",isbn:"",language:"",category:"",uploadImages:[]
     })
     const [preview,setPreview] = useState("")
+    const [previewList,setPreviewList] = useState([])
 
-    console.log(bookDetails);
+    // console.log(bookDetails);
 
     const handleUploadBookImage = (e)=>{
         const imageFile = e.target.files[0]
@@ -16,6 +19,44 @@ function UploadBook() {
         setBookDetails({...bookDetails,uploadImages:uploadBookImageArray})
         const url = URL.createObjectURL(imageFile)
         setPreview(url)
+        const demoPreviewList = previewList
+        demoPreviewList.push(url)
+        setPreviewList(demoPreviewList)
+    }
+
+    const resetForm = ()=>{
+        setBookDetails({
+        title:"",author:"",pages:"",imageURL:"",price:"",discountPrice:"",abstract:"",publisher:"",isbn:"",language:"",category:"",uploadImages:[]
+        })
+        setPreview("")
+        setPreviewList([])
+    }
+
+    const handleAddBook = async ()=>{
+        const {title,author,pages,imageURL,price,discountPrice,abstract,publisher,isbn,language,category,uploadImages} = bookDetails
+        if(!title || !author || !imageURL || !pages || !price || !discountPrice || !abstract || !publisher || !isbn || !language || !category || uploadImages.length==0){
+            toast.info("Please fill the form completely!!!")
+        }else{
+            //api call
+            const reqBody = new FormData()
+            for(let key in bookDetails){
+                if(key != "uploadImages"){
+                    reqBody.append(key,bookDetails[key])
+                }else{
+                    bookDetails.uploadImages.forEach(imageFile=>{
+                        reqBody.append("uploadImages",imageFile)
+                    })
+                }
+            }
+            const result = await addBookAPI(reqBody)
+            // console.log(result);
+            if(result.status==201){
+                toast.success("Book Added Successfully...")
+            }else {
+                toast.warning(result.response)
+            }
+            resetForm()
+        }
     }
     
   return (
@@ -69,20 +110,29 @@ function UploadBook() {
                 {
                     preview &&
                     <div className="flex justify-center items-center">
-                    <img  width={'70px'} height={'70px'}  src="https://tse2.mm.bing.net/th/id/OIP.1Kis_mthP77favEcfzT93QHaLT?pid=Api&P=0&h=180" alt="book Image not found" />
-                    <label htmlFor="bookUpload">
-                        <input type="file" id='bookUpload' hidden/>
-                        <FaPlus className='text-3xl ms-2'/>
-                    </label>
+                    {
+                        previewList?.map((imageURL,index)=>(
+                            <img key={`${imageURL}-${index}`} width={'70px'} height={'70px'} className='mx-2'  src={imageURL} alt="book Image not found" />
+                        ))
+                    }
+                    {
+                        previewList.length<3 &&
+                        <label htmlFor="bookUpload">
+                            <input onChange={e=>handleUploadBookImage(e)} type="file" id='bookUpload' hidden/>
+                            <FaPlus className='text-3xl ms-2'/>
+                        </label>
+                    }
                     </div>
                 }
             </div>
         </div>
         {/* reset & add button */}
         <div className="flex md:justify-end justify-center w-full p-3 mt-8">
-            <button className="bg-gray-600 text-white py-2 px-3 rounded hover:text-gray-600 hover:bg-white">RESET</button>
-            <button className="bg-blue-600 text-white py-2 px-3 rounded ms-5  hover:text-blue-600 hover:bg-white">ADD BOOK DETAILS</button>
+            <button onClick={resetForm} className="bg-gray-600 text-white py-2 px-3 rounded hover:text-gray-600 hover:bg-white">RESET</button>
+            <button onClick={handleAddBook} className="bg-blue-600 text-white py-2 px-3 rounded ms-5  hover:text-blue-600 hover:bg-white">ADD BOOK DETAILS</button>
         </div>
+        {/* toaster */}
+        <ToastContainer position='top-center' theme='colored' autoClose={3000} />
     </div>
   )
 }

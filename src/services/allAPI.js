@@ -29,3 +29,18 @@ export const addBookAPI = async (bookDetails)=>{
 export const getHomePageBooksAPI = async ()=>{
     return await apiService("GET",`/home-books`,{})
 }
+
+//all-books : getAllBooksAPI - called by Book scompoennet when page open
+export const getAllBooksAPI = async ()=>{
+    return await apiService("GET",`/all-books`,{})
+}
+
+//user-books : called by BookStatus component when it opens
+export const getAllUserBooksAPI = async ()=>{
+    return await apiService("GET",`/user-books`,{})
+}
+
+//bought-books : called by Purchase  component when it opens
+export const getAllUserBoughtBooksAPI = async ()=>{
+    return await apiService("GET",`/bought-books`,{})
+}

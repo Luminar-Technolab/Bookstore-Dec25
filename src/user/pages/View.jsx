@@ -1,11 +1,27 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Header from '../components/Header'
 import Footer from '../../components/Footer'
 import { FaBackward, FaCamera, FaEye } from 'react-icons/fa'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
+import { viewBookAPI } from '../../services/allAPI'
+import axiosInstance from '../../api/axiosInstance'
 
 function View() {
+
   const [modal,setModal] = useState(false)
+  const {id} = useParams()
+  const [bookDetails,setBookDetails] = useState({})
+  console.log(bookDetails);
+  
+  useEffect(()=>{
+    getBookDetails()
+  },[])
+
+  const getBookDetails = async ()=>{
+    const result = await viewBookAPI(id)
+    setBookDetails(result.data)
+  }
+
   return (
     <>
     <Header/>
@@ -14,30 +30,30 @@ function View() {
         <div className="md:grid grid-cols-4 gap-x-10">
           {/* image */}
           <div className="col-span-1">
-            <img className='w-full' src="https://tse2.mm.bing.net/th/id/OIP.1Kis_mthP77favEcfzT93QHaLT?pid=Api&P=0&h=180" alt="book" />
+            <img className='w-full' src={bookDetails?.imageURL} alt="book" />
           </div>
           {/* book details */}
           <div className="col-span-3">
             <div className="flex justify-between mt-5 md:mt-0">
-              <h3 className="text-2xl font-bold">title</h3>
+              <h3 className="text-2xl font-bold">{bookDetails?.title}</h3>
               <button onClick={()=>setModal(true)} className="text-gray-400"> <FaEye/> </button>
             </div>
-             <h2 className="text-blue-700 font-bold text-xl my-5">author</h2>
+             <h2 className="text-blue-700 font-bold text-xl my-5">{bookDetails?.author}</h2>
              <div className="md:grid grid-cols-3 gap-5 my-10">
-              <p className='font-bold'>Publisher : </p>
-              <p className='font-bold'>Language  : </p>
-              <p className='font-bold'>No. of Pages : </p>
-              <p className='font-bold'>Category  : </p>
-              <p className='font-bold'>ISBN  : </p>
-              <p className='font-bold'>Original Price : </p>
-              <p className='font-bold'>Seller : </p>
+              <p className='font-bold'>Publisher : {bookDetails?.publisher}</p>
+              <p className='font-bold'>Language  : {bookDetails?.language}</p>
+              <p className='font-bold'>No. of Pages : {bookDetails?.pages}</p>
+              <p className='font-bold'>Category  : {bookDetails?.category}</p>
+              <p className='font-bold'>ISBN  : {bookDetails?.isbn}</p>
+              <p className='font-bold'>Original Price : {bookDetails?.price}</p>
+              <p className='font-bold'>Seller : {bookDetails?.sellerMail}</p>
              </div>
              <div className="md:my-10 my-4">
-              <h4 className='font-bold text-lg'>Abstract :  </h4>
+              <h4 className='font-bold text-lg'>Abstract :  {bookDetails?.abstract}</h4>
              </div>
              <div className="flex justify-end">
                 <Link to={'/books'} className='bg-blue-900 text-white p-2 font-black flex items-center'> <FaBackward className='me-2'/> Back</Link>
-                <button className='bg-green-900 text-white p-2 font-black  ms-5'> Buy $ 89</button>
+                <button className='bg-green-900 text-white p-2 font-black  ms-5'> Buy $ {bookDetails?.discountPrice}</button>
              </div>
           </div>
         </div>
@@ -58,7 +74,14 @@ function View() {
                 <p className="text-blue-500 flex items-center"> <FaCamera className='me-2'/> Camera clicks of the book </p>
                 <div className="md:flex flex-wrap my-4">
                   {/* duplicate image */}
-                  <img className='md:w-75 w-25 md:me-2 mb-3 md:mt-0' src="https://tse2.mm.bing.net/th/id/OIP.1Kis_mthP77favEcfzT93QHaLT?pid=Api&P=0&h=180" alt="book" />
+                 {
+                  bookDetails?.uploadImages?.length>0 ?
+                   bookDetails?.uploadImages?.map(filename=>(
+                     <img className='md:w-75 w-25 md:me-2 mb-3 md:mt-0' src={`${axiosInstance.defaults.baseURL}/uploads/${filename}`} alt="book" />
+                  ))
+                  :
+                  <div className='my-5 font-semibold'>Images are not available!!!</div>
+                 }
                 </div>
               </div>
             </div>

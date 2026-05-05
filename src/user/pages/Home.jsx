@@ -1,13 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Header from "../components/Header";
 import Footer from "../../components/Footer";
 import { FaSearch } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
 import { getHomePageBooksAPI } from '../../services/allAPI';
+import { searchContext } from '../../contextAPI/ShareContext';
+import { ToastContainer, toast } from 'react-toastify';
 
 function Home() {
   
+  const navigate = useNavigate()
+  const {searchKey,setSearchKey} = useContext(searchContext)
   const [homeBooks,setHomeBooks] = useState([])
+
   // console.log(homeBooks);
   
   useEffect(()=>{
@@ -21,6 +26,21 @@ function Home() {
     }
   }
 
+  const handleSearch = ()=>{
+    if(!searchKey){
+      toast.warning("Please input Book title here!!!")
+    }else if(!sessionStorage.getItem("token")){
+      toast.warning("Please login!!!")
+      setTimeout(() => {
+        navigate("/login")
+      }, 2000);
+    }else if(searchKey && sessionStorage.getItem("token")){
+      navigate("/books")
+    }else{
+      toast.error("Something went wrong!!!")
+    }
+  }
+
   return (
     <>
     <Header/>
@@ -30,8 +50,8 @@ function Home() {
       <h1 className="text-6xl font-bold">Wonderful Gifts</h1>
       <p>Gift your family and friends a book</p>
       <div className="mt-9 flex items-center">
-        <input placeholder='Search A Book' type="text" className="bg-white p-2 rounded-3xl w-100 text-black" />
-        <FaSearch className='text-gray-500 cursor-pointer' style={{marginLeft:'-40px'}}/>
+        <input onChange={(e)=>setSearchKey(e.target.value)} placeholder='Search A Book' type="text" className="bg-white p-2 rounded-3xl w-100 text-black" />
+        <FaSearch onClick={handleSearch} className='text-gray-500 cursor-pointer' style={{marginLeft:'-40px'}}/>
       </div>
     </div>
     </div>
@@ -90,6 +110,8 @@ function Home() {
       </div>
     </section>
     <Footer/>
+    {/* toaster */}
+    <ToastContainer position='top-center' theme='colored' autoClose={3000} />
     </>
   )
 }

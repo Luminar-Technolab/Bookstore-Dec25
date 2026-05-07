@@ -59,3 +59,21 @@ export const viewBookAPI = async (id)=>{
 export const buyBookAPI = async (id)=>{
     return await apiService("PUT",`/books/${id}/buy`,{})
 }
+//'http://localhost:3000/profile/69e994ca6601400b8c3a71ef : put rqst by admin Settings page when update btn clicked
+export const adminUpdateAPI = async (adminId,adminData)=>{
+    return await apiService("PUT",`/profile/${adminId}`,adminData)
+}
+//http://localhost:3000/user-list : get rqst by resources when tab become 2
+export const userListAPI = async ()=>{
+    return await apiService("GET",`/user-list`,{})
+}
+
+//http://localhost:3000/book-list: get rqst by resource when tab == 1
+export const bookListAPI = async ()=>{
+    return await apiService("GET",`/book-list`,{})
+}
+
+//http://localhost:3000/books/69f57e3c88c71023ee8d3996: put rqst by resouce component when approve btn cliked
+export const editBookStatusAPI = async (id)=>{
+    return await apiService("PUT",`/books/${id}`,{})
+}

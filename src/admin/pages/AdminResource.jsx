@@ -1,10 +1,47 @@
-import React,{useState} from 'react'
+import React,{useEffect, useState} from 'react'
 import AdminHeader from "../components/AdminHeader";
 import AdminSidebar from "../components/AdminSidebar";
 import Footer from '../../components/Footer';
+import { bookListAPI, editBookStatusAPI, userListAPI } from '../../services/allAPI';
+import axiosInstance from '../../api/axiosInstance';
+import { ToastContainer, toast } from 'react-toastify';
 
 function AdminResource() {
   const [currentTab,setCurrentTab] = useState(1)
+  const [allUsers,setAllUsers] = useState([])
+  const [allBooks,setAllBooks] = useState([])
+  console.log(allBooks);
+  
+  useEffect(()=>{
+    if(currentTab==2){
+      getAllUsers()
+    }else{
+      getAllBooks()
+    }
+  },[currentTab])
+
+  const getAllBooks = async ()=>{
+    const result = await bookListAPI()
+    if(result.status==200){
+      setAllBooks(result.data)
+    }
+  }
+
+  const getAllUsers = async ()=>{
+    const result = await userListAPI()
+    if(result.status==200){
+      setAllUsers(result.data)
+    }
+  }
+
+  const updateBookStatus = async (id)=>{
+    const result = await editBookStatusAPI(id)
+    if(result.status==200){
+      toast.success("Book Approved Successsfully!!!")
+      getAllBooks()
+    }
+  }
+
   return (
    <>
     <AdminHeader/>
@@ -23,36 +60,57 @@ function AdminResource() {
         { currentTab==1 &&
         <div className="md:grid grid-cols-4 w-full my-5">
           {/* duplicate according to book */}
-          <div className="shadow rounded p-3 m-4 md:my-0">
-            <img width={'100%'} height={'300px'} src="https://tse2.mm.bing.net/th/id/OIP.1Kis_mthP77favEcfzT93QHaLT?pid=Api&P=0&h=180" alt="book" />
-            <div className="flex flex-col justify-center items-center mt-4">
-              <h2 className="text-blue-700 font-bold text-xl">author</h2>
-              <h3 className="text-lg">title</h3>
-              <p className="font-bold text-red-500">$ price</p>
-              {/* approve btn */}
-              <button className='bg-green-600 text-white p-2  mt-2 w-full'>APPROVE</button>
-            </div>
-          </div>
+          {
+            allBooks.length>0?
+            allBooks?.map(book=>(
+              <div key={book?._id} className="shadow rounded p-3 m-4 md:my-0">
+                <img width={'100%'} height={'300px'} src={book?.imageURL} alt="book" />
+                <div className="flex flex-col justify-center items-center mt-4">
+                  <h2 className="text-blue-700 font-bold text-xl">{book?.author}</h2>
+                  <h3 className="text-lg">{book?.title}</h3>
+                  <p className="font-bold text-red-500">$ {book?.discountPrice}</p>
+                  {/* approve btn/ check mark icon */}
+                  {
+                    book?.status != "approved"?
+                    <button onClick={()=>updateBookStatus(book?._id)} className='bg-green-600 text-white p-2  mt-2 w-full'>APPROVE</button>
+                  :
+                    <img width={'50%'} className='mt-2' src="https://static.vecteezy.com/system/resources/previews/016/774/415/large_2x/green-check-mark-icon-on-transparent-background-free-png.png" alt="check mark icon" />
+                  }
+                </div>
+              </div>
+            ))
+            :
+            <div className="text-xl font-bold">Sorry!!! No books added yet..</div>
+          }
         </div>
         }
         { currentTab==2 &&
           <div className="md:grid grid-cols-3 w-full my-5">
           {/* duplicate according to users */}
-          <div className="rounded bg-gray-200 p-2 m-2">
-            <p className="text-red-500 font-bold text-md">ID : </p>
-            <div className="flex mt-3 items-center">
-              <img width={'80px'} height={'80px'} style={{borderRadius:'50%'}} src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_1280.png" alt="user" />
-              <div className="flex flex-col ml-3 w-full">
-                <h4 className="text-blue-400 font-bold text-md">Username</h4>
-                <p className="text-xs">mail</p>
+          {
+            allUsers.length>0?
+            allUsers?.map(user=>(
+              <div key={user?._id} className="rounded bg-gray-200 p-2 m-2">
+                <p className="text-red-500 font-bold text-md">ID : {user?._id}</p>
+                <div className="flex mt-3 items-center">
+                  <img width={'80px'} height={'80px'} style={{borderRadius:'50%'}} src={user?.picture==""?"https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_1280.png":user?.picture.startsWith("https://lh3.googleusercontent.com/")?user?.picture:`${axiosInstance.defaults.baseURL}/uploads/${user?.picture}`} alt="user" />
+                  <div className="flex flex-col ml-3 w-full">
+                    <h4 className="text-blue-400 font-bold text-md">{user?.username}</h4>
+                    <p className="text-xs">{user?.email}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            ))
+            :
+            <div className="text-xl font-bold">Sorry!!! Currently no users are registered...</div>
+          }
         </div>
         }
       </div>
     </div>
     <Footer/>
+    {/* toaster */}
+    <ToastContainer position='top-center' theme='colored' autoClose={1500} />
     </>
   )
 }

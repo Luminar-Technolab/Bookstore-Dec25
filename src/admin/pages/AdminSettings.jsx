@@ -1,10 +1,86 @@
-import React from 'react'
+import React,{useState,useEffect} from 'react'
 import AdminHeader from "../components/AdminHeader";
 import AdminSidebar from "../components/AdminSidebar";
 import Footer from '../../components/Footer';
 import { FaPen } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../../api/axiosInstance';
+import { ToastContainer, toast } from 'react-toastify';
+import { adminUpdateAPI } from '../../services/allAPI';
 
 function AdminSettings() {
+
+  const navigate = useNavigate()
+  const [userDetails,setUserDetails] = useState({
+      username:"",password:"",cPassword:"",picture:"",role:"",bio:"",id:""
+  })
+  const [existingPicture,setExistingPicture] = useState("")
+  const [preview,setPreview] = useState("")
+  const [passwordMatch,setPasswordMatch] = useState(true)
+  const [imageFileType,setImageFileType] = useState(false)
+  useEffect(()=>{
+      if(sessionStorage.getItem("user")){
+          const user = JSON.parse(sessionStorage.getItem("user"))
+          setUserDetails({...userDetails,username:user.username,role:user.role,bio:user.bio,id:user._id})
+          setExistingPicture(user.picture)
+      }
+  },[])
+
+  console.log(userDetails);
+
+  const handleFileUpload = (e)=>{
+        //console.log(e.target.files[0]);
+        const imageFile = e.target.files[0]
+        if(imageFile.type.startsWith("image/")){
+            setUserDetails({...userDetails,picture:e.target.files[0]})
+            const url = URL.createObjectURL(e.target.files[0])
+            setPreview(url)
+            setImageFileType(true)
+        }else{
+            setImageFileType(false)
+        }
+    }
+
+    const checkPassowordMatch = (data)=>{
+        setUserDetails({...userDetails,cPassword:data})
+        userDetails.password == data ? setPasswordMatch(true) : setPasswordMatch(false)
+    }
+
+    const resetProfileForm = ()=>{
+        const user = JSON.parse(sessionStorage.getItem("user"))
+        setUserDetails({username:user.username,role:user.role,bio:user.bio,id:user._id,password:"",cPassword:"",picture:""})
+        setExistingPicture(user.picture)
+        setPreview("")
+        setImageFileType(false)
+        setPasswordMatch(true)
+    }
+
+    const handleUserUpdate = async ()=>{
+        const {username,password,picture,bio,id,cPassword} = userDetails
+        if(!username || !password || !cPassword ){
+            toast.info("Please fill the form completely!!!")
+        }else if(passwordMatch){
+            const reqBody = new FormData()
+            for(let key in userDetails){
+                if(key != "picture"){
+                    reqBody.append(key,userDetails[key])
+                }else{
+                    preview ? reqBody.append("picture",picture) : reqBody.append("picture",existingPicture)
+                }
+            }
+            //api call
+            const result = await adminUpdateAPI(id,reqBody)
+            console.log(result);
+            if(result.status==200){
+                toast.success("Admin profile updated successfully... Please Login!!!")
+                setTimeout(() => {
+                    sessionStorage.clear()
+                    navigate('/login')
+                }, 2500);
+            }
+        }
+    }
+
   return (
     <>
     <AdminHeader/>
@@ -33,32 +109,44 @@ function AdminSettings() {
           <div className="flex justify-center items-center flex-col m-10 bg-blue-100 p-5 rounded">
               {/* edit picture */}
               <label htmlFor="userProfile">
-                  <input type="file" id='userProfile' hidden />
-                  <img style={{width:'100px',height:'100px',borderRadius:'50%'}} className='border border-gray-300 z-52' src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_1280.png" alt="user" />
+                  <input onChange={e=>handleFileUpload(e)} type="file" id='userProfile' hidden />
+                  {
+                      existingPicture==""?
+                      <img style={{width:'100px',height:'100px',borderRadius:'50%'}} className='border border-gray-300 z-52' src={preview?preview:"https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_1280.png"} alt="user" />
+                      :
+                      existingPicture.startsWith("https://lh3.googleusercontent.com/")?
+                      <img style={{width:'100px',height:'100px',borderRadius:'50%'}} className='border border-gray-300 z-52' src={preview?preview:existingPicture} alt="user" />
+                      :
+                      <img style={{width:'100px',height:'100px',borderRadius:'50%'}} className='border border-gray-300 z-52' src={preview?preview:`${axiosInstance.defaults.baseURL}/uploads/${existingPicture}`} alt="user" />
+                  }
                   <button className="bg-black text-white px-3 py-2 rounded z-53 " style={{marginLeft:'50px',marginTop:'-15px'}}> <FaPen/> </button>
               </label>
+              {!imageFileType && <div className="mt-5  text-yellow-500 text-sm">*Only accept image file</div>}
               {/* username */}
               <div className="mt-10 mb-3 w-full px-5">
-                  <input type="text" placeholder='Username' className='w-full border border-gray-300 rounded p-2' />
+                  <input value={userDetails.username} onChange={e=>setUserDetails({...userDetails,username:e.target.value})} type="text" placeholder='Username' className='w-full border border-gray-300 rounded p-2' />
               </div>
               {/* new password */}
               <div className=" mb-3 w-full px-5">
-                  <input type="text" placeholder='New Password' className='w-full border border-gray-300 rounded p-2' />
+                  <input value={userDetails.password} onChange={e=>setUserDetails({...userDetails,password:e.target.value})} type="password" placeholder='New Password' className='w-full border border-gray-300 rounded p-2' />
               </div>
               {/* confirm password */}
               <div className=" mb-3 w-full px-5">
-                  <input type="text" placeholder='Confirm Password' className='w-full border border-gray-300 rounded p-2' />
+                  <input value={userDetails.cPassword} onChange={e=>checkPassowordMatch(e.target.value)} type="password" placeholder='Confirm Password' className='w-full border border-gray-300 rounded p-2' />
               </div>
+              {!passwordMatch && <div className="mb-3  text-yellow-500 text-sm">*Password and confirm passowrd must be same</div>}
               {/* reset & update button */}
               <div className="flex justify-end w-full px-5 mt-5">
-                  <button className="bg-yellow-600 text-white py-2 px-3 rounded">RESET</button>
-                  <button className="bg-green-600 text-white py-2 px-3 rounded ms-5">UPDATE</button>
+                  <button onClick={resetProfileForm}  className="bg-yellow-600 text-white py-2 px-3 rounded">RESET</button>
+                  <button onClick={handleUserUpdate} className="bg-green-600 text-white py-2 px-3 rounded ms-5">UPDATE</button>
               </div>
           </div>
         </div>
       </div>
     </div>
     <Footer/>
+    {/* toaster */}
+    <ToastContainer position='top-center' theme='colored' autoClose={3000} />
     </>
   )
 }

@@ -1,10 +1,40 @@
-import React from 'react'
+import React,{useRef} from 'react'
 import Header from '../components/Header'
 import Footer from '../../components/Footer'
 import { FaLocationPin } from 'react-icons/fa6'
 import { FaEnvelope, FaPaperPlane, FaPhone } from 'react-icons/fa'
+import emailjs from '@emailjs/browser';
+import { ToastContainer, toast } from 'react-toastify';
 
 function Contact() {
+   const form = useRef();
+
+   const sendEmail = (e) => {
+    e.preventDefault();
+    // console.log(form.current.name.value);
+    const {name,email,title} = form.current
+    if(name.value && email.value && title.value){
+    emailjs.sendForm(import.meta.env.VITE_SERVICE_ID, import.meta.env.VITE_TEMPLATE_ID, form.current, {
+        publicKey: import.meta.env.VITE_PUBLIC_KEY
+      })
+      .then(
+        () => {
+          console.log('SUCCESS!');
+          toast.success("Thank you for contacting with us... Our Team will get back to you!!!")
+          name.value = ""
+          email.value = ""
+          title.value = ""
+        },
+        (error) => {
+          console.log('FAILED...', error.text);
+        },
+      );
+    }else{
+      toast.warning("Please fill the form completely...")
+    }
+    
+  };
+
   return (
     <>
     <Header/>
@@ -34,18 +64,18 @@ function Contact() {
       <div className="md:grid grid-cols-2 gap-10 my-5 p-5 md:px-40">
         <div className="bg-gray-100 p-5 text-center">
           <h1 className="font-semi-bold text-2xl">Send Us Message!</h1>
-          <form >
+          <form ref={form} onSubmit={sendEmail}>
             <div className="mb-5 mt-10">
-              <input placeholder='Name' type="text" className="bg-white w-full p-2" />
+              <input name='name' placeholder='Name' type="text" className="bg-white w-full p-2" />
             </div>
             <div className="mb-5 ">
-              <input placeholder='E Mail' type="text" className="bg-white w-full p-2" />
+              <input name='email' placeholder='E Mail' type="text" className="bg-white w-full p-2" />
             </div>
             <div className="mb-5 ">
-              <textarea placeholder='Message' type="text" className="bg-white w-full p-2" />
+              <textarea name='title' placeholder='Message' type="text" className="bg-white w-full p-2" />
             </div>
             <div className="my-5">
-              <button className="bg-black p-2 w-full text-white text-lg flex justify-center items-center">Submit <FaPaperPlane className='ms-2'/></button>
+              <button type='submit' className="bg-black p-2 w-full text-white text-lg flex justify-center items-center">Submit <FaPaperPlane className='ms-2'/></button>
             </div>
           </form>
         </div>
@@ -55,6 +85,8 @@ function Contact() {
       </div>
     </div>
     <Footer/>
+    {/* toaster */}
+    <ToastContainer position='top-center' theme='colored' autoClose={3000} />
     </>
   )
 }

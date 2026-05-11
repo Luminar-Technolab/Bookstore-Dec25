@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState,useEffect } from 'react'
 import { FaPlus } from 'react-icons/fa'
 import { ToastContainer, toast } from 'react-toastify';
 import { addBookAPI } from '../../services/allAPI';
@@ -9,8 +9,31 @@ function UploadBook() {
     })
     const [preview,setPreview] = useState("")
     const [previewList,setPreviewList] = useState([])
+    // const [debouncedTitleSearch, setDebouncedTitleSearch] = useState("")
 
-    // console.log(bookDetails);
+//     console.log(bookDetails);
+
+//     useEffect(() => {
+
+//     const timer = setTimeout(() => {
+//       setDebouncedTitleSearch(bookDetails.title)
+//     }, 1000)
+
+//     // Cleanup function
+//     return () => {
+//       clearTimeout(timer)
+//     }
+
+//   }, [bookDetails.title])
+
+//    useEffect(() => {
+
+//     if (debouncedTitleSearch) {
+//       console.log("api call");
+      
+//     }
+
+//   }, [debouncedTitleSearch])
 
     const handleUploadBookImage = (e)=>{
         const imageFile = e.target.files[0]

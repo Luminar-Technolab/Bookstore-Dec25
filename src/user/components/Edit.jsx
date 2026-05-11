@@ -25,7 +25,7 @@ function Edit() {
         }
     },[])
 
-    console.log(userDetails);
+    // console.log(userDetails);
     //console.log(existingPicture);
 
     const handleFileUpload = (e)=>{

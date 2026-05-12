@@ -77,3 +77,8 @@ export const bookListAPI = async ()=>{
 export const editBookStatusAPI = async (id)=>{
     return await apiService("PUT",`/books/${id}`,{})
 }
+
+//http://localhost:3000/books-ai : post rqst by UploadBook Component when title eenter
+export const getBookDetailsAPI = async (title)=>{
+    return await apiService("POST",`/books-ai`,{title})
+}

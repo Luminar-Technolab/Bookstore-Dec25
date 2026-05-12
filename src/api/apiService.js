@@ -9,8 +9,12 @@ const apiService =  async (httpMethod,url,reqBody,reqHeader)=>{
  }
  try{
     const response = await axiosInstance(reqConfig)
+    console.log(response);
+    
     return response
  }catch(err){
+   console.log(err);
+   
     return err
  }
 }

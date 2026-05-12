@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const axiosInstance = axios.create({
     baseURL:'http://localhost:3000',
-    timeout:5000
+    timeout:10000
 })
 
 // request interceptors : Handling Token append to Headers
@@ -37,6 +37,7 @@ axiosInstance.interceptors.response.use(
             }else if(error.request){
                 console.log("Client Error");   
                 return   error.request
+                // console.log("No response from server (Network issue)");
             }else{
                 console.log("Error : "+error.message);                
             }

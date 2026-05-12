@@ -1,7 +1,8 @@
 import React, { useState,useEffect } from 'react'
 import { FaPlus } from 'react-icons/fa'
 import { ToastContainer, toast } from 'react-toastify';
-import { addBookAPI } from '../../services/allAPI';
+import { addBookAPI,getBookDetailsAPI } from '../../services/allAPI';
+import useDebounce from "../../hooks/useDebounce";
 
 function UploadBook() {
     const [bookDetails,setBookDetails] = useState({
@@ -9,31 +10,22 @@ function UploadBook() {
     })
     const [preview,setPreview] = useState("")
     const [previewList,setPreviewList] = useState([])
-    // const [debouncedTitleSearch, setDebouncedTitleSearch] = useState("")
+    const debouncedTitleSearch = useDebounce(bookDetails.title,1000)
 
-//     console.log(bookDetails);
+   useEffect(() => {
+    if (debouncedTitleSearch) {
+      console.log("gemini api call");
+      generateBookAbstract()
+    }
+  }, [debouncedTitleSearch])
 
-//     useEffect(() => {
-
-//     const timer = setTimeout(() => {
-//       setDebouncedTitleSearch(bookDetails.title)
-//     }, 1000)
-
-//     // Cleanup function
-//     return () => {
-//       clearTimeout(timer)
-//     }
-
-//   }, [bookDetails.title])
-
-//    useEffect(() => {
-
-//     if (debouncedTitleSearch) {
-//       console.log("api call");
-      
-//     }
-
-//   }, [debouncedTitleSearch])
+  const generateBookAbstract = async ()=>{
+    console.log("Debounced value:", debouncedTitleSearch);
+    
+    const result = await getBookDetailsAPI(debouncedTitleSearch)
+    console.log(result);
+    setBookDetails({...bookDetails,abstract:result.data.content})
+  }
 
     const handleUploadBookImage = (e)=>{
         const imageFile = e.target.files[0]

@@ -1,12 +1,15 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { FaPowerOff } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
+import { routeContext } from '../../contextAPI/RouteGaurdContext'
 
 function AdminHeader() {
   const navigate = useNavigate()
+  const {role,setRole,authorisedUser,setAuthorisedUser} = useContext(routeContext)
 
   const logout = ()=>{
     sessionStorage.clear()
+    setAuthorisedUser(false)
     navigate('/')
   }
   return (

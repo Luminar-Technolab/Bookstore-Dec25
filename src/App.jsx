@@ -15,12 +15,14 @@ import Auth from './pages/Auth'
 import Pnf from './pages/Pnf'
 
 import Preloader from './components/Preloader'
-import { useState } from 'react';
+import { useState,useContext } from 'react';
 import PaymentSuccess from './user/pages/PaymentSuccess';
 import PaymentFail from './user/pages/PaymentFail';
+import {routeContext} from './contextAPI/RouteGaurdContext'
 
 function App() {
 
+  const {role} = useContext(routeContext)
   const [isLoading,setIsLoading] = useState(true)
 
   setTimeout(() => {
@@ -36,14 +38,24 @@ function App() {
         <Route path='/login' element={<Auth/>} />
         <Route path='/register' element={<Auth insideRegister/>} />
 
-        <Route path='/profile/:id' element={<Profile/>} />
-        <Route path='/books/:id' element={<View/>} />
-        <Route path='/success' element={<PaymentSuccess/>} />
-        <Route path='/cancel' element={<PaymentFail/>} />
+        {
+          role=="user" &&
+          <>
+            <Route path='/profile/:id' element={<Profile/>} />
+            <Route path='/books/:id' element={<View/>} />
+            <Route path='/success' element={<PaymentSuccess/>} />
+            <Route path='/cancel' element={<PaymentFail/>} />
+          </>
+        }
 
-        <Route path='/admin' element={isLoading?<Preloader/>:<AdminDashboard/>} />
-        <Route path='/admin/resources' element={<AdminResource/>} />
-        <Route path='/admin/settings' element={<AdminSettings/>} />
+        {
+          role=="admin" &&
+          <>
+            <Route path='/admin' element={isLoading?<Preloader/>:<AdminDashboard/>} />
+            <Route path='/admin/resources' element={<AdminResource/>} />
+            <Route path='/admin/settings' element={<AdminSettings/>} />
+          </>
+        }
         
         <Route path='/*' element={<Pnf/>} />
       </Routes>
